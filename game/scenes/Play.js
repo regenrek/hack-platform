@@ -7,6 +7,7 @@ export class Play extends Scene {
   }
 
   create() {
+    this.playerScore = 0;
     // Access the game store
 
     console.log("Scene created");

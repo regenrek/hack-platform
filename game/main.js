@@ -2,6 +2,7 @@ import { Boot } from "./scenes/Boot";
 import { MainMenu } from "./scenes/MainMenu";
 import { Preloader } from "./scenes/Preloader";
 import { Play } from "./scenes/Play";
+import { EnterName } from "./scenes/EnterName";
 
 export const createGame = (config = {}) =>
   new Phaser.Game({
@@ -35,5 +36,5 @@ export const createGame = (config = {}) =>
         gravity: { y: 900 },
       },
     },
-    scene: [Boot, Preloader, MainMenu, Play],
+    scene: [Boot, Preloader, MainMenu, Play, EnterName],
   });

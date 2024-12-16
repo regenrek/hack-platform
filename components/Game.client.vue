@@ -1,8 +1,12 @@
 <script setup lang="ts">
 import PhaserGame from "nuxtjs-phaser/phaserGame.vue";
 const { $bus } = useNuxtApp();
+import { useHighscores } from "~/composables/useHighscores";
 
-const gameState = useGameState("gameState");
+const { fetchTopHighscores, saveHighscore } = useHighscores();
+const userData = useUserData("userData");
+
+const highscores = ref([]);
 
 const createGame = ref(undefined);
 async function getGame() {
@@ -12,6 +16,25 @@ async function getGame() {
 function setPhaserFocus() {
   const phaser = document.getElementById("phaser");
   if (phaser) phaser.focus();
+}
+
+// Handle event bus here
+function onGameOver(payload) {
+  const { score } = payload;
+  // Save the score
+  saveHighscore(player.id, score).then(async () => {
+    // After saving, fetch new highscores
+    highscores.value = await fetchTopHighscores();
+    // We don't necessarily need to emit anything here unless the scene wants to know.
+    // If the scene is still running or we want to show updated results next time highscores are fetched, it's fine.
+  });
+}
+
+// When main menu requests highscores:
+async function onFetchHighscores() {
+  highscores.value = await fetchTopHighscores();
+  // Emit fetched results back to scene
+  $bus.emit("highscoresFetched", { highscores: highscores.value });
 }
 
 onMounted(async () => {
@@ -30,10 +53,12 @@ function gameStateBus() {
   );
 }
 
-$bus.on("gameState", gameStateBus);
+$bus.on("gameOver", onGameOver);
+$bus.on("fetchHighscores", onFetchHighscores);
 
-onUnmounted(async () => {
-  $bus.off("gameState", gameStateBus);
+onUnmounted(() => {
+  $bus.off("gameOver", onGameOver);
+  $bus.off("fetchHighscores", onFetchHighscores);
 });
 </script>
 
